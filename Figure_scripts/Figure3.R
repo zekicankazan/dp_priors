@@ -1,76 +1,52 @@
-source("functions.R")
+source("simulation_study_saved.R")
 
-# Generate Data
-set.seed(6)
-a <- 0; b <- 100; 
-true_Y_bar <- (32.08 - a)/(b-a); true_S_sq <- (16.98/(b-a))^2; nsims <- 5e3
-eps_1 <- 0.25; eps_2 <- 0.25; n <- 43; 
-priv_Y_bar <- rlaplace(1, true_Y_bar, 1/(eps_1*n)); 
-priv_S_sq <- rlaplace(1, true_S_sq, 1/(eps_2*n)) 
+plot_eps <- 2
 
-mu_0 <- (12.5 - a)/(b-a); sigma_0_sq <- (3.8/(b-a))^2
-kappa_0 <- 1; nu_0 <- 1
+# Create Top Panel
+p1 <- plot_df %>%
+  filter(n >= 30, eps == plot_eps) %>%
+  mutate(bdd = factor(bdd, c(T, F))) %>%
+  ggplot(aes(x = n, y = CI_len, color = factor(mu), linetype = bdd)) +
+  geom_line(linewidth = 0.75) + geom_point(size = 1) +
+  labs(color = "Truth", linetype = "Constrained?", x = "Sample Size, n", y = "Avg. Interval Length") +
+  scale_x_log10() +
+  scale_y_continuous(limits = c(NA, 0.3), breaks=seq(0, 0.3, 0.1)) +
+  scale_color_discrete(labels = c(expression("N(0.1, 0.04"^2*")"), expression("N(0.5, 0.2"^2*")  "))) +
+  theme_tufte()  +
+  theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank())
 
-# Run each of the Gibbs Samplers
-df_bd <- Gibbs(nsims, n, priv_Y_bar, priv_S_sq, eps_1, eps_2, bounded = T, 
-               flat_prior = F, mu_0 = mu_0, kappa_0 = kappa_0, nu_0 = nu_0, 
-               sigma_0_sq = sigma_0_sq)
-df_ub <- Gibbs(nsims, n, priv_Y_bar, priv_S_sq, eps_1, eps_2, bounded = F,
-               flat_prior = F, mu_0 = mu_0, kappa_0 = kappa_0, nu_0 = nu_0, 
-               sigma_0_sq = sigma_0_sq)
-df_bd_flat <- Gibbs(nsims, n, priv_Y_bar, priv_S_sq, eps_1, eps_2, bounded = T, 
-                    flat_prior = T)
-df_ub_flat <- Gibbs(nsims, n, priv_Y_bar, priv_S_sq, eps_1, eps_2, bounded = F,
-                    flat_prior = T)
+# Create Middle Panel
+p2 <- plot_df %>%
+  filter(n >= 30, eps == plot_eps) %>%
+  mutate(bdd = factor(bdd, c(T, F))) %>%
+  ggplot(aes(x = n, y = RMSE, color = factor(mu), linetype = bdd)) +
+  geom_line(linewidth = 0.75) + geom_point(size = 1) +
+  labs(color = "Truth", linetype = "Constrained?",
+       x = "Sample Size, n") +
+  scale_x_log10() +
+  scale_y_continuous(limits = c(NA, 0.06), breaks=seq(0, 0.06, 0.02)) +
+  scale_color_discrete(labels = c(expression("N(0.1, 0.04"^2*")"), 
+                                  expression("N(0.5, 0.2"^2*")  "))) +
+  theme_tufte() +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
 
-# Create Shaded Region
-df_fill <- data.frame(mu = b*seq(0,1,0.005), sigma_sq = 0) %>%
-  mutate(ymin = 0, ymax = mu*(b-mu))
-
-# Compute the Three Shapes
-add_points_flat <- data.frame(name = "Posterior Mode", bounded = c(T, F),
-                              mu = c(posterior.mode(df_bd_flat$mu, adjust = 1), 
-                                     posterior.mode(df_ub_flat$mu, adjust = 1)),
-                              sigma_sq = c(posterior.mode(df_bd_flat$sigma_sq, 
-                                                          adjust = 1), 
-                                           posterior.mode(df_ub_flat$sigma_sq, 
-                                                          adjust = 1))) %>%
-  rbind(data.frame(name = "Confidential Values", bounded = c(T,F), 
-                   mu = true_Y_bar, sigma_sq = true_S_sq)) %>%
-  rbind(data.frame(name = "Released Values", bounded = c(T,F), 
-                   mu = priv_Y_bar, sigma_sq = priv_S_sq)) %>%
-  mutate(bounded = factor(bounded, c(F, T), c("Unconstrained", "Constrained")),
-         name = factor(name, levels = c("Released Values", "Confidential Values",
-                                        "Posterior Mode", "Prior Values")),
-         mu = mu*(b-a)+a, sigma_sq = sigma_sq*(b-a)^2)
+# Create Bottom Panel
+p3 <- plot_df %>%
+  filter(n >= 30, eps == plot_eps) %>%
+  mutate(bdd = factor(bdd, c(T, F))) %>%
+  ggplot(aes(x = n, y = coverage, color = factor(mu), linetype = bdd)) +
+  geom_line(linewidth = 0.75) + geom_point(size = 1) +
+  labs(color = "Truth", linetype = "Constrained?", x = "Sample Size, n", y = "Coverage") +
+  scale_x_log10() +
+  scale_y_continuous(limits = c(0.9, 1), breaks=seq(0.9, 1, 0.025)) +
+  scale_color_discrete(labels = c(expression("N(0.1, 0.04"^2*")"), expression("N(0.5, 0.2"^2*")  "))) +
+  theme_tufte()
 
 # Create Figure 3
-df_bd_flat %>%
-  rbind(df_ub_flat) %>%
-  mutate(bounded = factor(bounded, c(F, T), c("Unconstrained", "Constrained")),
-         mu = mu*b, sigma_sq = sigma_sq*b^2) %>%
-  ggplot(aes(x = mu, y = sigma_sq)) +
-  geom_point(alpha = 0.3, size = 1) + 
-  geom_ribbon(data = df_fill, aes(ymin = ymin, ymax = ymax), 
-              fill = "gray", alpha = 0.5) +
-  geom_point(aes(x = mu, y = sigma_sq, shape = name, color = name), 
-             data = add_points_flat, size = 3) +
-  facet_grid(rows = vars(bounded)) +
-  scale_y_continuous(limits = c(NA, 10000)) +
-  scale_shape_manual(values=c(16,17,18,15)) +
-  scale_color_manual(values = c("#F8766D", "#7CAE00", "#00BFC4")) +
-  labs(x = expression("Average Blood Lead ("*mu*"g/dL)"), shape = "", color = "",
-       y = expression("Blood Lead Variance ("*mu*"g"^2*"/dL"^2*")")) +
-  theme_tufte() +
-  theme(plot.margin=grid::unit(c(0,0,0,0), "mm"), legend.position="bottom",
-        legend.margin=margin(0,0,0,0), legend.box.margin=margin(-5,0,0,0),
-        legend.spacing.y = unit(-0.5, "mm")) +
-  guides(colour=guide_legend(ncol=2,nrow=2,byrow=TRUE),
-         shape = guide_legend(ncol=2,nrow=2,byrow=TRUE))
+(p1/p2/p3) + plot_layout(guides = "collect") & 
+  theme(plot.margin=grid::unit(c(3,0,3,0), "mm"),
+        panel.grid.major.y = element_line(color = "lightgray", linewidth = 0.5))
 
-ggsave("Figures/Figure3.pdf", width = 3, height = 3.4, dpi=600, units = "in")
-
-## COMPUTE ADDITIONAL QUANTITIES REFERENCED IN SEC 4.2
-
-# Proportion with Infeasible sigma_sq in Figure 3
-summarize(df_ub_flat, infeasible = mean(mu > 0 & mu < 1 & sigma_sq > mu*(1-mu)))
+ggsave("Figures/Figure3.pdf", width = 6, height = 4.5, dpi=600, units = "in")

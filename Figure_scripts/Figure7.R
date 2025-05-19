@@ -35,7 +35,7 @@ add_points_comp <- data.frame(name = "Posterior Mode", ours = c(T, F),
                                         "Posterior Mode")),
          mu = b*mu, sigma_sq = b^2*sigma_sq)
 
-# Create Figure 11
+# Create Figure 7
 mutate(df_ours, ours = T) %>%
   dplyr::select(-omega_sq) %>%
   rbind(mutate(df_JAGR, ours = F)) %>%
@@ -56,4 +56,4 @@ mutate(df_ours, ours = T) %>%
   labs(x = expression(mu), shape = "", color = "", y = expression(sigma^2)) +
   theme_tufte()
 
-ggsave("Figures/Figure11.pdf", width = 6.75, height = 2, dpi=600, units = "in")
+ggsave("Figures/Figure7.pdf", width = 6, height = 2.1, dpi=600, units = "in")

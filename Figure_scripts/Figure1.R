@@ -51,18 +51,16 @@ df_bd %>%
               fill = "gray", alpha = 0.5) +
   geom_point(aes(x = mu, y = sigma_sq, shape = name, color = name),
              data = add_points, size = 3) +
-  facet_grid(rows = vars(bounded)) +
+  facet_grid(cols = vars(bounded)) +
   scale_shape_manual(values=c(16,17,18,15)) +
   labs(x = expression("Average Blood Lead ("*mu*"g/dL)"), shape = "", color = "",
        y = expression("Blood Lead Variance ("*mu*"g"^2*"/dL"^2*")")) +
   theme_tufte() +
-  theme(plot.margin=grid::unit(c(0,0,0,0), "mm"), legend.position="bottom",
+  theme(plot.margin=grid::unit(c(0,0,0,0), "mm"), legend.position="right",
         legend.margin=margin(0,0,0,0), legend.box.margin=margin(-5,0,0,0),
-        legend.spacing.y = unit(-0.5, "mm")) +
-  guides(colour=guide_legend(ncol=2,nrow=2,byrow=TRUE),
-         shape = guide_legend(ncol=2,nrow=2,byrow=TRUE))
+        legend.spacing.y = unit(-0.5, "mm"))
 
-ggsave("Figures/Figure1.pdf", width = 3, height = 3.4, dpi=600, units = "in")
+ggsave("Figures/Figure1.pdf", width = 6, height = 2.1, dpi=600, units = "in")
 
 
 ## COMPUTE ADDITIONAL QUANTITIES REFERENCED IN SEC 3.2
