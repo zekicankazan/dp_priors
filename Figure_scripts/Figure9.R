@@ -8,6 +8,7 @@ library(Matrix)
 library(matrixcalc)
 library(MASS)
 library(mgcv)
+library(MCMCglmm)
 
 ## ADDITIONAL FUNCTION TO RUN SLR
 Gibbs_BeSh <- function(Z, n, d, eps, Delta, eta, xi, mu_0, Lambda_0, a_0, b_0, nsims,
@@ -256,7 +257,7 @@ p1 + p2 + plot_layout(guides = "collect") &
         legend.margin=margin(-10,0,-3,0), legend.box.margin=margin(-5,0,0,0),
         legend.spacing.y = unit(-0.5, "mm"))
 
-ggsave("Figures/Figure9.pdf", width = 6, height = 2.25, dpi=600, units = "in")
+ggsave("Figures/Figure9.pdf", width = 6, height = 2.75, dpi=600, units = "in")
 
 
 
