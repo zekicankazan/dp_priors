@@ -30,7 +30,7 @@ add_points_comp <- data.frame(name = "Posterior Mode", ours = c(T, F),
                    mu = true_Y_bar, sigma_sq = true_S_sq)) %>%
   rbind(data.frame(name = "Released Values", ours = c(T,F), 
                    mu = priv_Y_bar, sigma_sq = priv_S_sq)) %>%
-  mutate(ours = factor(ours, c(T, F), c("Constrained Statisics", "Constrained Likelihood")),
+  mutate(ours = factor(ours, c(T, F), c("CSS", "MJS")),
          name = factor(name, levels = c("Released Values", "Confidential Values",
                                         "Posterior Mode")))
 
@@ -39,7 +39,7 @@ mutate(df_ours, ours = T) %>%
   dplyr::select(-omega_sq) %>%
   rbind(mutate(df_JAGR, ours = F)) %>%
   filter(t %% 5 == 0) %>%
-  mutate(ours = factor(ours, c(T, F), c("Constrained Statisics", "Constrained Likelihood"))) %>%
+  mutate(ours = factor(ours, c(T, F), c("CSS", "MJS"))) %>%
   ggplot(aes(x = mu, y = sigma_sq)) +
   geom_point(alpha = 0.3, size = 1) + 
   geom_ribbon(data = df_fill, aes(ymin = ymin, ymax = ymax), 

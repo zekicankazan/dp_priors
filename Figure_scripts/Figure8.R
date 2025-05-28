@@ -23,8 +23,7 @@ plot_df <- plot_df %>%
   rbind(mutate(plot_df_JAGR, ours = F)) %>%
   drop_na() %>%
   filter(bdd, eps == 0.2) %>%
-  mutate(ours = factor(ours, c(T, F), c("Constrained Statisics", 
-                                        "Constrained Likelihood")))
+  mutate(ours = factor(ours, c(T, F), c("CSS", "MJS")))
 
 # Create Top Panel
 p1 <- plot_df %>%
