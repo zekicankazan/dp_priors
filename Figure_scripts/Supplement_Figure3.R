@@ -66,4 +66,4 @@ p1/p2/p3 + plot_layout(guides = "collect", axes = "collect") &
   theme(plot.margin=grid::unit(c(3,0,3,0), "mm"),
         panel.grid.major.y = element_line(color = "lightgray", linewidth = 0.5))
 
-ggsave("Figures/Figure8.pdf", width = 6, height = 4.5, dpi=600, units = "in")
+ggsave("Figures/Supplement_Figure3.pdf", width = 6, height = 4.5, dpi=600, units = "in")
